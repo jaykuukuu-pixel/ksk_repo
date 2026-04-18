@@ -61,7 +61,9 @@ st.markdown("<p style='text-align: center; font-size: 1.2rem; color: #7f8c8d; ma
 @st.cache_data
 def load_data():
     # โหลดข้อมูลค่าสอบบัญชีและข้อมูลทางการเงินที่รวมกันมาแล้ว
-    merged = pd.read_csv("SET - Clean.csv")
+    import os
+    file_path = os.path.join(os.path.dirname(__file__), "SET - Clean.csv")
+    merged = pd.read_csv(file_path)
     merged.columns = merged.columns.str.strip()
     
     # แปลงตัวเลข
