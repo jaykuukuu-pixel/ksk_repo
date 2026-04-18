@@ -81,10 +81,10 @@ def load_data():
     merged['Other_Fee_Num'] = merged['Totat_other_fee'].apply(clean_num)
     
     # จัดการกับข้อมูล Null
-    if 'รวมรายได้' in merged.columns:
-        merged['รวมรายได้'] = pd.to_numeric(merged['รวมรายได้'].apply(clean_num), errors='coerce').fillna(0)
+    if 'รายได้จากการดำเนินงาน' in merged.columns:
+        merged['รายได้จากการดำเนินงาน'] = pd.to_numeric(merged['รายได้จากการดำเนินงาน'].apply(clean_num), errors='coerce').fillna(0)
     else:
-        merged['รวมรายได้'] = 0
+        merged['รายได้จากการดำเนินงาน'] = 0
         
     if 'รวมสินทรัพย์' in merged.columns:
         merged['รวมสินทรัพย์'] = pd.to_numeric(merged['รวมสินทรัพย์'].apply(clean_num), errors='coerce').fillna(0)
@@ -93,7 +93,7 @@ def load_data():
     
     # คำนวณ % ค่าสอบบัญชีต่อสินทรัพย์และรายได้
     merged['% Fee to Asset'] = np.where(merged['รวมสินทรัพย์'] > 0, (merged['Audit_Fee_Num'] / merged['รวมสินทรัพย์']) * 100, 0)
-    merged['% Fee to Revenue'] = np.where(merged['รวมรายได้'] > 0, (merged['Audit_Fee_Num'] / merged['รวมรายได้']) * 100, 0)
+    merged['% Fee to Revenue'] = np.where(merged['รายได้จากการดำเนินงาน'] > 0, (merged['Audit_Fee_Num'] / merged['รายได้จากการดำเนินงาน']) * 100, 0)
 
     return merged
 
@@ -194,7 +194,7 @@ with col2:
     # ให้ผู้ใช้เลือกแกน X
     x_axis_choice = st.radio(
         "เลือกตัวแปรอ้างอิง (X-Axis):",
-        options=["รวมสินทรัพย์", "รวมรายได้"],
+        options=["รวมสินทรัพย์", "รายได้จากการดำเนินงาน"],
         horizontal=True
     )
     
@@ -208,10 +208,10 @@ with col2:
             y="Audit_Fee_Num",
             color="Market",
             hover_name="Symbol",
-            hover_data=["Company", "Auditor", "รวมสินทรัพย์", "รวมรายได้"],
+            hover_data=["Company", "Auditor", "รวมสินทรัพย์", "รายได้จากการดำเนินงาน"],
             labels={
                 "รวมสินทรัพย์": "รวมสินทรัพย์ (ล้านบาท)",
-                "รวมรายได้": "รวมรายได้ (ล้านบาท)",
+                "รายได้จากการดำเนินงาน": "รายได้จากการดำเนินงาน (ล้านบาท)",
                 "Audit_Fee_Num": "ค่าสอบบัญชี (บาท)"
             },
             log_x=True, # ใช้ Log scale เพราะข้อมูลมีความต่างกันมาก
@@ -301,14 +301,14 @@ display_cols = [
     "Symbol", "Company", "Market", "Industry", "Sector", "Auditor", 
     "Audit_fee", "Audit_fee(Sub)", "Totat_audit_fee", 
     "Other_fee", "Other_fee(Sub)", "Totat_other_fee", 
-    "รวมสินทรัพย์", "รวมรายได้", "% Fee to Asset", "% Fee to Revenue"
+    "รวมสินทรัพย์", "รายได้จากการดำเนินงาน", "% Fee to Asset", "% Fee to Revenue"
 ]
 available_cols = [c for c in display_cols if c in df_filtered.columns]
 
 # Style the dataframe
 styled_df = df_filtered.sort_values("Audit_Fee_Num", ascending=False)[available_cols].style.format({
     "รวมสินทรัพย์": "{:,.2f}",
-    "รวมรายได้": "{:,.2f}",
+    "รายได้จากการดำเนินงาน": "{:,.2f}",
     "% Fee to Asset": "{:.6f}%",
     "% Fee to Revenue": "{:.6f}%"
 }).background_gradient(subset=['% Fee to Asset', '% Fee to Revenue'], cmap='YlOrRd')
