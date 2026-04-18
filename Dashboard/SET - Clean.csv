@@ -1,4 +1,4 @@
-Symbol,Company,Market,Industry,Sector,Auditor,Auditor_Original,Audit_fee,Audit_fee(Sub),Other_fee,Other_fee(Sub),Totat_audit_fee,Totat_other_fee,รวมสินทรัพย์,รวมรายได้
+Symbol,Company,Market,Industry,Sector,Auditor,Auditor_Original,Audit_fee,Audit_fee(Sub),Other_fee,Other_fee(Sub),Totat_audit_fee,Totat_other_fee,รวมสินทรัพย์,รายได้จากการดำเนินงาน
 2S,บริษัท 2 เอส เมทัล จำกัด (มหาชน),SET,สินค้าอุตสาหกรรม,เหล็ก และ ผลิตภัณฑ์โลหะ,BDO AUDIT COMPANY LIMITED,บริษัท บีดีโอ ออดิท จำกัด,"1,800,000.00","480,000.00","363,701.44","27,740.00","2,280,000.00","391,441.44","2,380,000,000.00","7,540,000,000.00"
 3BBIF,กองทุนรวมโครงสร้างพื้นฐานบรอดแบนด์อินเทอร์เน็ต สามบีบี,SET,เทคโนโลยี,เทคโนโลยีสารสนเทศและการสื่อสาร,KPMG PHOOMCHAI AUDIT LIMITED,บริษัท เคพีเอ็มจี ภูมิไชย สอบบัญชี จำกัด,"1,709,000.00",,0,,"1,709,000.00",0,,
 88TH,บริษัท 88(ไทยแลนด์) จำกัด (มหาชน),mai,สินค้าอุปโภคบริโภค,-,EY OFFICE LIMITED,บริษัท สำนักงาน อีวาย จำกัด,"2,350,000.00",,0,,"2,350,000.00",0,"555,000,000.00","658,000,000.00"
