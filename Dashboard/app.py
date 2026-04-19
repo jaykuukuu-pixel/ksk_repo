@@ -328,7 +328,7 @@ st.markdown("<p style='color:#7f8c8d; font-size:0.9rem;'>ถามข้อม�
 try:
     api_key = st.secrets["GEMINI_API_KEY"]
     genai.configure(api_key=api_key)
-    gemini_model = genai.GenerativeModel("gemini-2.0-flash")
+    gemini_model = genai.GenerativeModel("gemini-2.5-flash-lite")
     chatbot_ready = True
 except Exception:
     chatbot_ready = False
