@@ -1,8 +1,0 @@
-streamlit
-pandas
-plotly
-numpy
-matplotlib
-jinja2
-google-generativeai
-
