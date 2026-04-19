@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import numpy as np
+import google.generativeai as genai
 
 # กำหนดการแสดงผลของหน้าเว็บ
 st.set_page_config(page_title="Audit Fees Dashboard", layout="wide", page_icon="📊")
@@ -314,3 +315,89 @@ styled_df = df_filtered.sort_values("Audit_Fee_Num", ascending=False)[available_
 }).background_gradient(subset=['% Fee to Asset', '% Fee to Revenue'], cmap='YlOrRd')
 
 st.dataframe(styled_df, width='stretch')
+
+st.divider()
+
+# ============================================================
+# AI CHATBOT
+# ============================================================
+st.markdown("### 🤖 ถามผู้ช่วย AI (Powered by Gemini)")
+st.markdown("<p style='color:#7f8c8d; font-size:0.9rem;'>ถามข้อมูลค่าสอบบัญชีในชุดข้อมูลที่กรองไว้ได้เลยครับ เช่น 'Big 4 มีส่วนแบ่งตลาดรวมเท่าไหร่?' หรือ 'อุตสาหกรรมไหนมีค่าสอบสูงสุด?'</p>", unsafe_allow_html=True)
+
+# โหลด API Key จาก Streamlit Secrets
+try:
+    api_key = st.secrets["GEMINI_API_KEY"]
+    genai.configure(api_key=api_key)
+    gemini_model = genai.GenerativeModel("gemini-3.1-flash-lite-preview")
+    chatbot_ready = True
+except Exception:
+    chatbot_ready = False
+    st.info("💡 ยังไม่ได้ตั้งค่า GEMINI_API_KEY ใน Streamlit Secrets - กรุณาเพิ่ม Key เพื่อใช้ฟีเจอร์ Chatbot")
+
+if chatbot_ready:
+    # สร้าง Context สรุปข้อมูลที่กรองไว้ให้ AI รู้จัก
+    top_auditors = df_filtered.groupby('Auditor')['Audit_Fee_Num'].sum().nlargest(5).reset_index()
+    top_auditors_str = top_auditors.to_string(index=False)
+    top_industry = df_filtered.groupby('Industry')['Audit_Fee_Num'].mean().nlargest(5).reset_index()
+    top_industry_str = top_industry.to_string(index=False)
+    
+    data_context = f"""
+    ข้อมูลค่าสอบบัญชี SET ที่กรองไว้อยู่ในขณะนี้:
+    - จำนวนบริษัท: {len(df_filtered)} บริษัท
+    - ค่าสอบบัญชีเฉลี่ย: {df_filtered['Audit_Fee_Num'].mean():,.0f} บาท
+    - ค่าสอบบัญชีมัธยฐาน: {df_filtered['Audit_Fee_Num'].median():,.0f} บาท
+    - ค่าสอบบัญชีสูงสุด: {df_filtered['Audit_Fee_Num'].max():,.0f} บาท (บริษัท {df_filtered.loc[df_filtered['Audit_Fee_Num'].idxmax(), 'Symbol']})
+    - รวมค่าสอบบัญชีทั้งหมด: {df_filtered['Audit_Fee_Num'].sum():,.0f} บาท
+    - ตลาดที่มี: {', '.join(df_filtered['Market'].unique())}
+    
+    Top 5 สำนักงานสอบบัญชีตามค่าสอบรวม:
+    {top_auditors_str}
+    
+    Top 5 อุตสาหกรรมตามค่าสอบเฉลี่ย:
+    {top_industry_str}
+    """
+    
+    SYSTEM_PROMPT = f"""
+    คุณคือผู้ช่วย AI ผู้เชี่ยวชาญด้านค่าสอบบัญชี (Audit Fee) สำหรับบริษัทจดทะเบียนในตลาดหลักทรัพย์ไทย (SET)
+    ตอบคำถามเป็นภาษาไทยเสมอ กระชับ ชัดเจน และอ้างอิงตัวเลขจากข้อมูลที่มีให้
+    
+    {data_context}
+    """
+    
+    # เก็บประวัติการสนทนาใน Session State
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+    
+    # แสดงประวัติการสนทนา
+    for msg in st.session_state.chat_history:
+        with st.chat_message(msg["role"]):
+            st.write(msg["content"])
+    
+    # รับคำถามจาก User
+    if user_input := st.chat_input("พิมพ์คำถามของคุณที่นี่..."):
+        # แสดงคำถาม User
+        with st.chat_message("user"):
+            st.write(user_input)
+        st.session_state.chat_history.append({"role": "user", "content": user_input})
+        
+        # สร้าง Prompt รวม System + ประวัติ + คำถามใหม่
+        full_prompt = SYSTEM_PROMPT + "\n\n" + "\n".join(
+            [f"{m['role'].upper()}: {m['content']}" for m in st.session_state.chat_history]
+        )
+        
+        with st.chat_message("assistant"):
+            with st.spinner("กำลังคิด..."):
+                try:
+                    response = gemini_model.generate_content(full_prompt)
+                    answer = response.text
+                except Exception as e:
+                    answer = f"เกิดข้อผิดพลาด: {str(e)}"
+            st.write(answer)
+        
+        st.session_state.chat_history.append({"role": "assistant", "content": answer})
+    
+    # ปุ่ม Clear ประวัติการสนทนา
+    if st.session_state.chat_history:
+        if st.button("🗑️ ล้างประวัติการสนทนา"):
+            st.session_state.chat_history = []
+            st.rerun()
